@@ -1,45 +1,56 @@
-import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
-const Form = ({username}) => {
-  console.log(username)
-  
-  let name = useRef()
-  let price = useRef()
-  let quantity = useRef()
-  let expiry = useRef()
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import getToken from "./getToken";
+const Form = () => {
+  const [user, setUser] = useState()
 
-  const [data, setdata] = useState([])
+  let name = useRef();
+  let price = useRef();
+  let quantity = useRef();
+  let expiry = useRef();
+
+  let token = getToken();
+
+  const [data, setdata] = useState([]);
 
   useEffect(() => {
-    axios.get("/api/user/getmedicine").then((res)=>{
-      setdata(res.data.medicine)
-    });
-  },[])
 
-  // console.log(data)  
-  
-  const hendelSubmit =(e)=>{
-    e.preventDefault()
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    };
+    axios.get("http://localhost:5000/api/user/getmedicine", config).then((res) => {
+      setdata(res.data.medicine)
+      setUser(res.data.user.data)
+      // console.log(res.data.user.data)
+
+    });
+  }, []);
+
+
+  const hendelSubmit = (e) => {
+    e.preventDefault();
 
     let obj = {
       name: name.current.value,
       price: price.current.value,
       quantity: quantity.current.value,
-      expiry: expiry.current.value
-    }
+      expiry: expiry.current.value,
+    };
 
-    // console.log(obj,"obj")
-    
 
-    axios.post("/api/user/addmedicine",obj).then((res)=>{
-       setdata([...data,res.data.medicine])
-    })
-  }
+    axios
+      .post("http://localhost:5000/api/user/addmedicine", obj)
+      .then((res) => {
+        setdata([...data, res.data.medicine]);
+      });
+  };
 
   return (
     <div>
-      {username == "" ? null : <h1> Wellcome back : {username} to Medicine Store</h1>}
-
+      <h1>Wellcome Back : {user?.name}</h1>
       <form onSubmit={hendelSubmit}>
         <input type="text" name="name" ref={name} />
         <input type="number" name="price" ref={price} />
@@ -78,7 +89,6 @@ const Form = ({username}) => {
       </div>
     </div>
   );
-        }
-        
-        export default Form;
-        
+};
+
+export default Form;
